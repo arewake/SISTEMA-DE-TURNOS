@@ -1,3 +1,3 @@
-﻿crewai==0.102.0
-langchain-google-genai==2.0.1
-python-dotenv==1.0.1
+﻿crewai
+langchain-google-genai
+python-dotenv
