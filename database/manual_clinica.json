@@ -1,0 +1,12 @@
+{
+    "preparacion_estudios": {
+        "holter": "Para el estudio Holter de 24 horas en Cardiología, el paciente debe venir bañado, con ropa cómoda y holgada (preferiblemente camisa con botones), sin cremas ni aceites en el torso.",
+        "electrocardiograma": "No requiere ayuno ni preparación previa. Solo evitar ejercicio físico intenso 30 minutos antes del turno.",
+        "evaluacion_psiquiatrica": "Primera consulta dura 50 minutos. Traer listado de medicación actual y estudios previos si los tuviera."
+    },
+    "politicas_clinica": {
+        "obras_sociales": "Atendemos OSDE, Swiss Medical, Galeno y consultas particulares. Para obras sociales es obligatorio presentar credencial digital y DNI.",
+        "tolerancia_demora": "La tolerancia máxima de espera para el paciente es de 15 minutos. Pasado ese tiempo, el sistema reasigna el bloque.",
+        "cancelaciones": "Se debe cancelar con al menos 12 horas de anticipación para no registrar una ausencia en el historial del paciente."
+    }
+}

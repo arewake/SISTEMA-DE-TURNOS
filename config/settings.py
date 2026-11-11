@@ -1,12 +1,10 @@
 # config/settings.py
 import os
 from dotenv import load_dotenv
-from langchain_google_genai import ChatGoogleGenerativeAI
+from crewai import LLM
 
-# Cargar las variables de entorno desde el archivo .env
 load_dotenv()
 
-# Validar que la API Key esté presente obligatoriamente
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
 if not GEMINI_API_KEY:
@@ -17,12 +15,10 @@ if not GEMINI_API_KEY:
 
 def obtener_llm(temperature=0.5):
     """
-    Retorna una instancia configurada de Gemini 2.0 Flash.
-    Utilizamos una temperatura moderada por defecto para balancear la creatividad 
-    del agente recepcionista con la precisión del agente de agenda.
+    Retorna una instancia nativa de LLM de CrewAI configurada con el modelo vigente Gemini 3.8 Flash.
     """
-    return ChatGoogleGenerativeAI(
-        model="gemini-2.0-flash",
-        google_api_key=GEMINI_API_KEY,
+    return LLM(
+        model="gemini/gemini-3.8-flash",
+        api_key=GEMINI_API_KEY,
         temperature=temperature
     )
