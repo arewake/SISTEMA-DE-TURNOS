@@ -1,5 +1,9 @@
 ﻿.env
+firebase_credentials*.json
 __pycache__/
 *.pyc
 .vscode/
+.venv/
 database/clinica_mock.json
+~$*
+*.tmp
