@@ -1,10 +1,6 @@
-﻿crewai
-langchain-google-genai
-python-dotenv
-
-# requirements.txt
-firebase-admin
+﻿firebase-admin
 google-genai
 python-dotenv
 fastapi
 uvicorn
+requests
