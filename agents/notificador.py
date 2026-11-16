@@ -3,8 +3,7 @@ from crewai import Agent
 from crewai.tools import tool
 from config.settings import obtener_llm
 from database.simulacion_db import cargar_db, guardar_db
-
-# --- HERRAMIENTAS (TOOLS) PARA OPTIMIZAR CANCELACIONES ---
+from database.crud_tools import aplicar_demora_en_cascada
 
 @tool("Procesar Cancelación y Liberar Espacio")
 def tool_cancelar_y_liberar(turno_id: str) -> str:
@@ -38,7 +37,6 @@ def tool_asignar_lista_espera(especialista_id: str, fecha: str, hora_libre: str)
         if not lista:
             return "INFORMACIÓN: No hay pacientes en lista de espera para este día. El hueco queda libre."
         
-        # Simular que tomamos al primer paciente elegible de la lista
         paciente_asignado = lista.pop(0) 
         guardar_db(db)
         
@@ -49,22 +47,41 @@ def tool_asignar_lista_espera(especialista_id: str, fecha: str, hora_libre: str)
     except Exception as e:
         return f"Error al procesar lista de espera: {str(e)}"
 
+@tool("Gestionar Demora en Cascada de Especialista")
+def tool_gestionar_demora_cascada(especialista_id: str, fecha: str, minutos_retraso: int) -> str:
+    """
+    Aplica un retraso en minutos a toda la agenda confirmada de un especialista en una fecha.
+    Devuelve la lista exacta de pacientes afectados con sus nuevos horarios estimados para avisarles.
+    """
+    try:
+        afectados = aplicar_demora_en_cascada(especialista_id, fecha, minutos_retraso)
+        if not afectados:
+            return f"No hay turnos confirmados afectados para {especialista_id} en la fecha {fecha}."
+        
+        reporte = f"ALERTA DE CASCADA: Se aplicó un retraso de {minutos_retraso} min. Pacientes afectados:\n"
+        for p in afectados:
+            reporte += (
+                f"- {p['paciente_nombre']} (Tel: {p['telefono']}): "
+                f"Turno original {p['hora_original']} -> Nuevo horario estimado {p['nueva_hora_estimada']}.\n"
+            )
+        return reporte
+    except Exception as e:
+        return f"Error al calcular demora en cascada: {str(e)}"
 
-# --- DEFINICIÓN DEL AGENTE ---
 def crear_agente_seguimiento():
-    """Inicializa el Agente Notificador y Optimizador."""
-    llm_resolutivo = obtener_llm(temperature=0.2)
+    """Inicializa el Agente Notificador y Optimizador con capacidades de cancelación y demoras."""
+    llm_resolutivo = obtener_llm(temperature=0.3)
     
     return Agent(
-        role="Especialista en Seguimiento y Optimización de Agenda",
-        goal="Reducir el ausentismo, procesar cancelaciones y rellenar huecos vacíos de forma proactiva utilizando listas de espera.",
+        role="Especialista en Seguimiento, Demoras y Optimización de Agenda",
+        goal="Reducir el ausentismo, optimizar huecos por cancelaciones y gestionar proactivamente las demoras de los médicos.",
         backstory=(
-            "Eres el estratega logístico de la clínica. Odias ver un hueco vacío en la agenda de un médico "
-            "porque sabes que significa tiempo perdido para el especialista y un paciente que se quedó sin atención. "
-            "Cuando te notifican una cancelación, actúas de inmediato interactuando con las herramientas de la base de datos "
-            "para mover a los pacientes de la lista de espera al nuevo espacio disponible."
+            "Eres el estratega logístico de la clínica. Sabes que el tiempo de los pacientes es oro. "
+            "Cuando un turno se cancela, reubicas rápido a alguien de la lista de espera. "
+            "Cuando un médico se retrasa, calculas el impacto en cascada y redactas mensajes claros y empáticos "
+            "para que los pacientes siguientes no pierdan tiempo en la sala de espera."
         ),
-        tools=[tool_cancelar_y_liberar, tool_asignar_lista_espera],
+        tools=[tool_cancelar_y_liberar, tool_asignar_lista_espera, tool_gestionar_demora_cascada],
         llm=llm_resolutivo,
         verbose=True
     )
